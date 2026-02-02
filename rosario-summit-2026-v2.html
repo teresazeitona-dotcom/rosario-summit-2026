@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosário Summit 2026 - Inscrições Workshops</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --azul-principal: #1e3a8a;
+            --azul-claro: #3b82f6;
+            --dourado: #d4a853;
+            --dourado-claro: #f0d78c;
+            --cinza-fundo: #e8e8e8;
+            --cinza-claro: #f5f5f5;
+            --texto-escuro: #1a1a2e;
+            --texto-medio: #4a5568;
+            --verde: #059669;
+            --vermelho: #dc2626;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            background: var(--cinza-fundo);
+            color: var(--texto-escuro);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--azul-principal) 0%, #0f172a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(212, 168, 83, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .logo-rosario {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--dourado);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        .logo-summit {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.05em;
+            line-height: 1;
+        }
+
+        .logo-summit span { color: var(--azul-claro); }
+
+        .logo-year {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dourado);
+            letter-spacing: 0.1em;
+        }
+
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .header-theme {
+            color: var(--dourado-claro);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .connection-status.online { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .connection-status.offline { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .connection-status.connecting { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .online .status-dot { background: #34d399; }
+        .offline .status-dot { background: #f87171; }
+        .connecting .status-dot { background: #fbbf24; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .session-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            background: rgba(212, 168, 83, 0.2);
+            color: var(--dourado-claro);
+            border: 2px solid rgba(212, 168, 83, 0.4);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.875rem;
+            font-family: inherit;
+        }
+
+        .tab.active {
+            background: var(--dourado);
+            color: var(--azul-principal);
+            box-shadow: 0 4px 15px rgba(212, 168, 83, 0.4);
+        }
+
+        .tab:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab:not(.active):hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1024px) {
+            .grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(30, 58, 138, 0.12);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-icon.blue { background: linear-gradient(135deg, var(--azul-principal) 0%, var(--azul-claro) 100%); }
+        .card-icon.gold { background: linear-gradient(135deg, var(--dourado) 0%, #b8860b 100%); }
+        .card-icon.green { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+        .card-icon svg { width: 22px; height: 22px; color: white; }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--azul-principal);
+        }
+
+        .setup-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid var(--dourado);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+
+        .setup-card h2 { color: var(--azul-principal); margin-bottom: 1rem; }
+        .setup-card ol { margin-left: 1.5rem; color: var(--texto-escuro); }
+        .setup-card li { margin-bottom: 0.75rem; }
+        .setup-card code { background: rgba(30, 58, 138, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; }
+        .setup-card a { color: var(--azul-principal); font-weight: 600; }
+
+        .qr-card {
+            text-align: center;
+            padding: 2rem;
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, var(--azul-principal), var(--dourado)) border-box;
+        }
+
+        .qr-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--azul-principal);
+            margin-bottom: 0.5rem;
+        }
+
+        .qr-card .session-info {
+            font-size: 0.9rem;
+            color: var(--dourado);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .qr-container {
+            display: inline-block;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.15);
+            margin-bottom: 1rem;
+            border: 2px solid var(--cinza-fundo);
+        }
+
+        .qr-card .rules {
+            font-size: 0.8rem;
+            color: var(--azul-principal);
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(59, 130, 246, 0.05));
+            border-radius: 8px;
+            border-left: 3px solid var(--azul-claro);
+            text-align: left;
+        }
+
+        .form-group { margin-bottom: 1.5rem; }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--texto-escuro);
+            margin-bottom: 0.5rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            font-size: 1.1rem;
+            font-family: inherit;
+            color: var(--texto-escuro);
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--azul-claro);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        input::placeholder { color: #94a3b8; }
+
+        .numero-input {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.15em;
+            padding: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: linear-gradient(135deg, var(--azul-principal) 0%, var(--azul-claro) 100%); color: white; }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(30, 58, 138, 0.35); }
+        .btn-gold { background: linear-gradient(135deg, var(--dourado) 0%, #b8860b 100%); color: var(--azul-principal); }
+        .btn-gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212, 168, 83, 0.4); }
+        .btn-secondary { background: var(--cinza-claro); color: var(--texto-escuro); border: 2px solid #e2e8f0; }
+        .btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
+        .btn-danger { background: #fef2f2; color: #dc2626; border: 2px solid #fecaca; }
+        .btn-danger:hover:not(:disabled) { background: #fee2e2; }
+        .btn-success { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; }
+        .btn-success:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35); }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; width: auto; margin-top: 0; }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 450px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            background: var(--cinza-claro);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .checkbox-item:hover:not(.disabled) { background: #e2e8f0; }
+        .checkbox-item.selected { background: rgba(30, 58, 138, 0.05); border-color: var(--azul-claro); }
+        .checkbox-item.disabled { opacity: 0.6; cursor: not-allowed; background: #fef2f2; border-color: #fecaca; }
+        .checkbox-item.full { background: #fef2f2; border-color: #fecaca; }
+
+        .checkbox-item input {
+            width: 24px;
+            height: 24px;
+            margin-top: 2px;
+            accent-color: var(--azul-principal);
+        }
+
+        .checkbox-item .workshop-info { flex: 1; }
+
+        .checkbox-item .workshop-info h4 {
+            font-weight: 700;
+            color: var(--texto-escuro);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-item .workshop-info p {
+            font-size: 0.85rem;
+            color: var(--texto-medio);
+            margin-bottom: 0.5rem;
+        }
+
+        .vagas-info {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .vagas-info .turno {
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .turno.disponivel { background: #d1fae5; color: #047857; }
+        .turno.lotado { background: #fee2e2; color: #dc2626; }
+        .turno.unico { background: #dbeafe; color: #1d4ed8; }
+
+        .exclusivo-badge {
+            background: var(--dourado);
+            color: var(--azul-principal);
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .workshop-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .workshop-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .workshop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .workshop-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--azul-principal);
+        }
+
+        .workshop-desc {
+            color: var(--texto-medio);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-open { background: #d1fae5; color: #047857; }
+        .badge-pending { background: #fef3c7; color: #b45309; }
+        .badge-closed { background: #f1f5f9; color: #475569; }
+        .badge-full { background: #fee2e2; color: #dc2626; }
+
+        .turnos-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .turno-card {
+            background: var(--cinza-claro);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .turno-card h4 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--azul-principal);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .turno-card .count {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .turno-card.turno1 .count { color: var(--verde); }
+        .turno-card.turno2 .count { color: var(--azul-claro); }
+
+        .turno-list {
+            font-size: 0.8rem;
+            color: var(--texto-medio);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .turno-list .aluno {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-family: 'Space Grotesk', monospace;
+            font-weight: 600;
+        }
+
+        .progress-container { margin-top: 0.75rem; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.5rem; }
+        .progress-label { color: var(--texto-medio); }
+        .progress-value { font-weight: 700; color: var(--azul-principal); }
+
+        .progress-bar {
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--verde) 0%, var(--azul-claro) 50%, var(--dourado) 100%);
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .message {
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .message-success { background: #d1fae5; border: 1px solid #a7f3d0; color: #047857; }
+        .message-error { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+        .message-warning { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+
+        .rules-info {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(212, 168, 83, 0.05));
+            border: 1px solid rgba(30, 58, 138, 0.1);
+            border-left: 4px solid var(--dourado);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .rules-info strong { display: block; margin-bottom: 0.5rem; color: var(--azul-principal); font-size: 1rem; }
+        .rules-info ul { margin-left: 1.25rem; margin-top: 0.5rem; }
+        .rules-info li { margin-bottom: 0.25rem; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--azul-principal);
+        }
+
+        .stat-card .stat-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--azul-principal);
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--texto-medio);
+            margin-top: 0.25rem;
+        }
+
+        .table-container { overflow-x: auto; margin-top: 1rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        thead { background: var(--azul-principal); color: white; }
+        th { padding: 0.75rem 1rem; text-align: left; font-weight: 600; }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0; }
+        tr:hover { background: var(--cinza-claro); }
+
+        .inscritos-container {
+            border-top: 1px solid #e2e8f0;
+            background: var(--cinza-claro);
+            margin: 1rem -1.5rem -1.5rem;
+            padding: 1.5rem;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .btn-icon:hover { background: #fee2e2; }
+        .btn-icon svg { width: 16px; height: 16px; color: #dc2626; }
+
+        .workshop-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--texto-medio);
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--azul-principal);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--dourado);
+            border-radius: 2px;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 1.5rem;
+            background: var(--azul-principal);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+
+        footer strong { color: var(--dourado); }
+
+        .hidden { display: none !important; }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: var(--texto-medio);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: var(--azul-principal);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+            .turnos-display { grid-template-columns: 1fr; }
+            .logo-summit { font-size: 1.5rem; }
+            .logo-year { font-size: 1.25rem; }
+            .logo-container { flex-direction: column; align-items: flex-start; }
+            .numero-input { font-size: 1.75rem; }
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            .qr-card { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <span class="logo-rosario">ROSÁRIO</span>
+                    <span class="logo-summit">SUM<span>MIT</span></span>
+                    <span class="logo-year">2026</span>
+                    <p class="header-subtitle">Sistema de Inscrições em Workshops</p>
+                    <p class="header-theme">A Inteligência Artificial e a Inteligência do Coração</p>
+                </div>
+                <div id="connection-status" class="connection-status connecting">
+                    <span class="status-dot"></span>
+                    <span>A conectar...</span>
+                </div>
+            </div>
+            <div id="session-indicator"></div>
+            
+            <div class="tabs no-print">
+                <button class="tab active" data-tab="inscricao" onclick="switchTab('inscricao')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    Inscrição
+                </button>
+                <button class="tab" data-tab="admin" onclick="switchTab('admin')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Administração
+                </button>
+                <button class="tab" data-tab="qrcodes" onclick="switchTab('qrcodes')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z" />
+                    </svg>
+                    QR Codes
+                </button>
+                <button class="tab" data-tab="estatisticas" onclick="switchTab('estatisticas')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z" />
+                    </svg>
+                    Estatísticas
+                </button>
+                <button class="tab" data-tab="config" onclick="switchTab('config')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3" />
+                    </svg>
+                    Firebase
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div id="message-container"></div>
+
+        <!-- Tab Configuração Firebase -->
+        <div id="tab-config" class="tab-content hidden">
+            <div class="setup-card">
+                <h2>🔧 Configuração do Firebase</h2>
+                <p style="margin-bottom: 1rem;">Para sincronização em tempo real entre administradores:</p>
+                <ol>
+                    <li>Aceda a <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a></li>
+                    <li>Crie um projeto: "rosario-summit-2026"</li>
+                    <li><strong>Firestore Database</strong> → Criar → <strong>Modo de teste</strong></li>
+                    <li><strong>Configurações</strong> → As suas apps → ícone <strong>&lt;/&gt;</strong></li>
+                    <li>Copie os valores e cole abaixo</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon gold">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                        </svg>
+                    </div>
+                    <h2 class="card-title">Credenciais Firebase</h2>
+                </div>
+                
+                <form id="form-firebase" onsubmit="saveFirebaseConfig(event)">
+                    <div class="form-group">
+                        <label>API Key *</label>
+                        <input type="text" id="firebase-apiKey" placeholder="AIzaSy..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Auth Domain *</label>
+                        <input type="text" id="firebase-authDomain" placeholder="projeto.firebaseapp.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Project ID *</label>
+                        <input type="text" id="firebase-projectId" placeholder="projeto" required>
+                    </div>
+                    <div class="form-group">
+                        <label>App ID *</label>
+                        <input type="text" id="firebase-appId" placeholder="1:123:web:abc" required>
+                    </div>
+                    <button type="submit" class="btn btn-gold">Guardar e Conectar</button>
+                </form>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="clearFirebaseConfig()">Limpar configuração</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Inscrição -->
+        <div id="tab-inscricao" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                            </svg>
+                        </div>
+                        <h2 class="card-title">Inscrição em Workshops</h2>
+                    </div>
+                    
+                    <div id="rules-display" class="rules-info"></div>
+                    
+                    <form id="form-inscricao" onsubmit="handleInscricao(event)">
+                        <div class="form-group">
+                            <label for="aluno-numero">O teu número de inscrição</label>
+                            <input type="text" id="aluno-numero" class="numero-input" placeholder="000" required maxlength="10" autocomplete="off">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Seleciona os workshops <span id="selection-hint" style="font-weight: normal; color: var(--dourado);"></span></label>
+                            <div id="workshops-checkbox" class="checkbox-group">
+                                <div class="loading"><div class="spinner"></div>A carregar...</div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="btn-inscricao">Confirmar Inscrição</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h2 class="section-title">Workshops Disponíveis</h2>
+                    <div id="workshops-disponiveis" class="workshop-list">
+                        <div class="loading"><div class="spinner"></div>A carregar...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Admin -->
+        <div id="tab-admin" class="tab-content hidden">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon gold">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </div>
+                        <h2 class="card-title">Criar Novo Workshop</h2>
+                    </div>
+                    
+                    <form id="form-workshop" onsubmit="handleCriarWorkshop(event)">
+                        <div class="form-group">
+                            <label>Nome do Workshop *</label>
+                            <input type="text" id="workshop-nome" placeholder="Ex: Robótica" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <textarea id="workshop-desc" rows="2" placeholder="Breve descrição..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Início Inscrições *</label>
+                                <input type="datetime-local" id="workshop-inicio" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Fim Inscrições *</label>
+                                <input type="datetime-local" id="workshop-limite" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="workshop-exclusivo" style="width: 20px; height: 20px; accent-color: var(--azul-principal);">
+                                <span>Workshop 1 / Exclusivo (25 alunos, não permite outros)</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Restringir a ano específico</label>
+                            <select id="workshop-ano-restrito">
+                                <option value="">Todos os anos (com turnos)</option>
+                                <option value="12ano">Apenas 12.º Ano (com turnos 25+25)</option>
+                                <option value="11ano">Apenas 11.º Ano (com turnos 31+31)</option>
+                                <option value="10ano">Apenas 10.º Ano (26 alunos, sem turnos)</option>
+                            </select>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--texto-medio); margin-top: -0.5rem; margin-bottom: 1rem;">
+                            <strong>Exclusivo (W1):</strong> 25 (12.º), 31 (11.º), 26 (10.º) - quem escolhe não pode escolher outros<br>
+                            <strong>Restrito 12.º:</strong> turnos 25+25 | <strong>Restrito 10.º:</strong> 26 alunos sem turnos
+                        </p>
+                        <button type="submit" class="btn btn-gold" id="btn-criar">Criar Workshop</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h2 class="section-title">Gerir Workshops</h2>
+                    <div id="workshops-admin" class="workshop-list">
+                        <div class="loading"><div class="spinner"></div>A carregar...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab QR Codes -->
+        <div id="tab-qrcodes" class="tab-content hidden">
+            <h2 class="section-title">QR Codes para Inscrições</h2>
+            <p style="color: var(--texto-medio); margin-bottom: 2rem;">Imprima os códigos QR. Cada um direciona para a sessão correta com as regras específicas.</p>
+            <div class="grid-3" id="qr-codes-container"></div>
+            <div style="margin-top: 2rem; text-align: center;" class="no-print">
+                <button class="btn btn-secondary btn-sm" onclick="window.print()" style="display: inline-flex;">Imprimir QR Codes</button>
+            </div>
+        </div>
+
+        <!-- Tab Estatísticas -->
+        <div id="tab-estatisticas" class="tab-content hidden">
+            <h2 class="section-title">Estatísticas e Relatórios</h2>
+            <div class="stats-grid" id="stats-overview"></div>
+            
+            <div class="grid" style="margin-top: 2rem;">
+                <div class="card">
+                    <h3 class="card-title" style="margin-bottom: 1rem;">Exportar PDF</h3>
+                    <button class="btn btn-success" onclick="exportarPDF()" style="margin-top: 0;">Exportar Listagens Completas</button>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-top: 2rem;">
+                <h3 class="card-title" style="margin-bottom: 1rem;">Listagem por Workshop</h3>
+                <div id="workshop-lists"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <strong>ROSÁRIO SUMMIT 2026</strong> • Sistema de Inscrições<br>
+        <span style="font-size: 0.75rem;">A Inteligência Artificial e a Inteligência do Coração</span>
+    </footer>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÃO
+        // ============================================
+        
+        const SESSOES = {
+            '12ano': {
+                id: '12ano',
+                nome: '12.º Ano',
+                data: '12 de fevereiro',
+                periodo: 'Manhã',
+                workshopsObrigatorios: 2,
+                limiteNormal: 50, // 25+25 turnos
+                limitePorTurno: 25,
+                temTurnos: true
+            },
+            '11ano': {
+                id: '11ano',
+                nome: '11.º Ano',
+                data: '13 de fevereiro',
+                periodo: 'Manhã',
+                workshopsObrigatorios: 2,
+                limiteNormal: 62, // 31+31 turnos
+                limitePorTurno: 31,
+                temTurnos: true
+            },
+            '10ano': {
+                id: '10ano',
+                nome: '10.º Ano',
+                data: '13 de fevereiro',
+                periodo: 'Tarde',
+                workshopsObrigatorios: 1,
+                limiteNormal: 26,
+                limitePorTurno: 26,
+                temTurnos: false
+            }
+        };
+
+        let db = null;
+        let workshops = [];
+        let expandedWorkshops = new Set();
+        let currentSession = null;
+        let unsubscribe = null;
+
+        // ============================================
+        // FIREBASE
+        // ============================================
+
+        function getFirebaseConfig() {
+            const saved = localStorage.getItem('firebaseConfig');
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        function saveFirebaseConfig(e) {
+            e.preventDefault();
+            const config = {
+                apiKey: document.getElementById('firebase-apiKey').value,
+                authDomain: document.getElementById('firebase-authDomain').value,
+                projectId: document.getElementById('firebase-projectId').value,
+                appId: document.getElementById('firebase-appId').value
+            };
+            localStorage.setItem('firebaseConfig', JSON.stringify(config));
+            showMessage('success', 'Guardado! A reconectar...');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+
+        function clearFirebaseConfig() {
+            if (confirm('Limpar configuração?')) {
+                localStorage.removeItem('firebaseConfig');
+                window.location.reload();
+            }
+        }
+
+        function loadFirebaseConfigToForm() {
+            const config = getFirebaseConfig();
+            if (config) {
+                document.getElementById('firebase-apiKey').value = config.apiKey || '';
+                document.getElementById('firebase-authDomain').value = config.authDomain || '';
+                document.getElementById('firebase-projectId').value = config.projectId || '';
+                document.getElementById('firebase-appId').value = config.appId || '';
+            }
+        }
+
+        function initFirebase() {
+            const config = getFirebaseConfig();
+            if (!config || !config.apiKey) {
+                updateConnectionStatus('offline', 'Não configurado');
+                showLocalMode();
+                return;
+            }
+
+            try {
+                if (!firebase.apps.length) firebase.initializeApp(config);
+                db = firebase.firestore();
+                
+                db.collection('workshops').get()
+                    .then(() => {
+                        updateConnectionStatus('online', 'Conectado');
+                        subscribeToWorkshops();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        updateConnectionStatus('offline', 'Erro');
+                        showLocalMode();
+                    });
+            } catch (err) {
+                console.error(err);
+                updateConnectionStatus('offline', 'Erro');
+                showLocalMode();
+            }
+        }
+
+        function updateConnectionStatus(status, text) {
+            const el = document.getElementById('connection-status');
+            el.className = `connection-status ${status}`;
+            el.innerHTML = `<span class="status-dot"></span><span>${text}</span>`;
+        }
+
+        function showLocalMode() {
+            workshops = [
+                {
+                    id: 'w1',
+                    nome: 'Workshop 1 - Programação',
+                    descricao: 'Introdução à programação com Python',
+                    dataInicio: '2026-02-01T08:00',
+                    dataLimite: '2026-02-14T23:59',
+                    exclusivo: true,
+                    anoRestrito: null,
+                    inscritos: []
+                },
+                {
+                    id: 'w2',
+                    nome: 'Workshop 2 - Robótica',
+                    descricao: 'Construção de robots com Arduino (apenas 12.º ano)',
+                    dataInicio: '2026-02-01T08:00',
+                    dataLimite: '2026-02-14T23:59',
+                    exclusivo: false,
+                    anoRestrito: '12ano',
+                    inscritos: []
+                },
+                {
+                    id: 'w3',
+                    nome: 'Workshop 3 - Design',
+                    descricao: 'Design gráfico com Canva (apenas 10.º ano)',
+                    dataInicio: '2026-02-01T08:00',
+                    dataLimite: '2026-02-14T23:59',
+                    exclusivo: false,
+                    anoRestrito: '10ano',
+                    inscritos: []
+                }
+            ];
+            renderWorkshops();
+        }
+
+        function subscribeToWorkshops() {
+            if (unsubscribe) unsubscribe();
+            unsubscribe = db.collection('workshops').orderBy('criadoEm', 'asc').onSnapshot(snapshot => {
+                workshops = [];
+                snapshot.forEach(doc => workshops.push({ id: doc.id, ...doc.data() }));
+                renderWorkshops();
+            });
+        }
+
+        // ============================================
+        // FUNÇÕES AUXILIARES
+        // ============================================
+
+        function isWorkshopDisponivelParaSessao(workshop) {
+            // Se não há sessão, mostrar todos (admin)
+            if (!currentSession) return true;
+            // Se workshop não tem restrição, está disponível para todos
+            if (!workshop.anoRestrito) return true;
+            // Se workshop tem restrição, verificar se corresponde à sessão atual
+            return workshop.anoRestrito === currentSession.id;
+        }
+
+        function getLimiteWorkshop(workshop) {
+            if (workshop.exclusivo) {
+                // Workshop 1 exclusivo tem limite diferente por ano
+                if (currentSession) {
+                    if (currentSession.id === '11ano') return 31;
+                    if (currentSession.id === '10ano') return 26;
+                }
+                return 25; // 12.º ano ou default
+            }
+            // Workshop restrito ao 10.º ano: limite de 26 (sem turnos)
+            if (workshop.anoRestrito === '10ano') return 26;
+            // Workshops restritos a 11.º ou 12.º funcionam com turnos normais
+            if (currentSession) {
+                return currentSession.limiteNormal;
+            }
+            return 50; // Default para admin sem sessão
+        }
+
+        function getLimitePorTurno() {
+            if (currentSession) return currentSession.limitePorTurno;
+            return 25; // Default
+        }
+
+        function temTurnos(workshop) {
+            if (workshop.exclusivo) return false;
+            // Workshop restrito ao 10.º ano: sem turnos
+            if (workshop.anoRestrito === '10ano') return false;
+            // Workshops restritos a 11.º ou 12.º funcionam com turnos normais
+            if (currentSession) return currentSession.temTurnos;
+            return true; // Default: tem turnos
+        }
+
+        function getVagasDisponiveis(workshop) {
+            const limite = getLimiteWorkshop(workshop);
+            const inscritos = (workshop.inscritos || []).length;
+            return Math.max(0, limite - inscritos);
+        }
+
+        function getTurno(workshop, posicao) {
+            if (!temTurnos(workshop)) return null;
+            const limiteTurno = getLimitePorTurno();
+            return posicao <= limiteTurno ? 1 : 2;
+        }
+
+        function getVagasTurno(workshop, turno) {
+            if (workshop.exclusivo) {
+                const limite = getLimiteWorkshop(workshop);
+                return { ocupadas: (workshop.inscritos || []).length, total: limite };
+            }
+            if (!temTurnos(workshop)) {
+                const limite = getLimiteWorkshop(workshop);
+                return { ocupadas: (workshop.inscritos || []).length, total: limite };
+            }
+            
+            const limiteTurno = getLimitePorTurno();
+            const inscritos = workshop.inscritos || [];
+            if (turno === 1) {
+                return { ocupadas: Math.min(inscritos.length, limiteTurno), total: limiteTurno };
+            } else {
+                return { ocupadas: Math.max(0, inscritos.length - limiteTurno), total: limiteTurno };
+            }
+        }
+
+        function getEstadoWorkshop(workshop) {
+            const agora = new Date();
+            const inicio = new Date(workshop.dataInicio);
+            const limite = new Date(workshop.dataLimite);
+            
+            if (agora < inicio) return 'pendente';
+            if (agora > limite) return 'encerrado';
+            if (getVagasDisponiveis(workshop) <= 0) return 'lotado';
+            return 'aberto';
+        }
+
+        function formatDate(d) {
+            if (!d) return '';
+            return new Date(d).toLocaleDateString('pt-PT');
+        }
+
+        function formatDateTime(d) {
+            if (!d) return '';
+            return new Date(d).toLocaleString('pt-PT');
+        }
+
+        function showMessage(tipo, texto) {
+            const container = document.getElementById('message-container');
+            const icons = {
+                success: 'M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                warning: 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z',
+                error: 'M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+            };
+            container.innerHTML = `<div class="message message-${tipo}"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="${icons[tipo]}" /></svg><span>${texto}</span></div>`;
+            setTimeout(() => container.innerHTML = '', 6000);
+        }
+
+        // ============================================
+        // RENDER
+        // ============================================
+
+        function renderWorkshops() {
+            renderWorkshopsDisponiveis();
+            renderWorkshopsCheckbox();
+            renderWorkshopsAdmin();
+        }
+
+        function renderWorkshopsDisponiveis() {
+            const container = document.getElementById('workshops-disponiveis');
+            
+            // Filtrar workshops disponíveis para a sessão atual
+            const workshopsDisponiveis = workshops.filter(w => isWorkshopDisponivelParaSessao(w));
+            
+            if (workshopsDisponiveis.length === 0) {
+                container.innerHTML = '<div class="empty-state">Ainda não há workshops disponíveis para esta sessão.</div>';
+                return;
+            }
+
+            container.innerHTML = workshopsDisponiveis.map(w => {
+                const estado = getEstadoWorkshop(w);
+                const limite = getLimiteWorkshop(w);
+                const inscritos = (w.inscritos || []).length;
+                const percentagem = (inscritos / limite) * 100;
+
+                let turnosHTML = '';
+                if (temTurnos(w)) {
+                    const t1 = getVagasTurno(w, 1);
+                    const t2 = getVagasTurno(w, 2);
+                    turnosHTML = `
+                        <div class="vagas-info" style="margin-top: 0.75rem;">
+                            <span class="turno ${t1.ocupadas >= t1.total ? 'lotado' : 'disponivel'}">Turno 1: ${t1.ocupadas}/${t1.total}</span>
+                            <span class="turno ${t2.ocupadas >= t2.total ? 'lotado' : 'disponivel'}">Turno 2: ${t2.ocupadas}/${t2.total}</span>
+                        </div>
+                    `;
+                }
+
+                const badges = {
+                    pendente: '<span class="badge badge-pending">Brevemente</span>',
+                    aberto: '<span class="badge badge-open">Aberto</span>',
+                    encerrado: '<span class="badge badge-closed">Encerrado</span>',
+                    lotado: '<span class="badge badge-full">Lotado</span>'
+                };
+                
+                const anoNomes = { '12ano': '12.º', '11ano': '11.º', '10ano': '10.º' };
+                const restricaoBadge = w.anoRestrito ? `<span class="exclusivo-badge" style="background: var(--azul-claro);">Só ${anoNomes[w.anoRestrito]}</span>` : '';
+
+                return `
+                    <div class="workshop-card">
+                        <div class="workshop-header">
+                            <h3 class="workshop-title">
+                                ${w.nome}
+                                ${w.exclusivo ? '<span class="exclusivo-badge">Exclusivo</span>' : ''}
+                                ${restricaoBadge}
+                            </h3>
+                            ${badges[estado]}
+                        </div>
+                        ${w.descricao ? `<p class="workshop-desc">${w.descricao}</p>` : ''}
+                        <div class="progress-container">
+                            <div class="progress-header">
+                                <span class="progress-label">Inscritos</span>
+                                <span class="progress-value">${inscritos} / ${limite}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${percentagem}%"></div>
+                            </div>
+                        </div>
+                        ${turnosHTML}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderWorkshopsCheckbox() {
+            const container = document.getElementById('workshops-checkbox');
+            
+            // Filtrar workshops disponíveis para a sessão atual
+            const workshopsDisponiveis = workshops.filter(w => isWorkshopDisponivelParaSessao(w));
+            
+            if (workshopsDisponiveis.length === 0) {
+                container.innerHTML = '<div class="empty-state">Sem workshops disponíveis para esta sessão.</div>';
+                return;
+            }
+
+            const anoNomes = { '12ano': '12.º', '11ano': '11.º', '10ano': '10.º' };
+
+            container.innerHTML = workshopsDisponiveis.map(w => {
+                const estado = getEstadoWorkshop(w);
+                const limite = getLimiteWorkshop(w);
+                const inscritos = (w.inscritos || []).length;
+                const vagas = getVagasDisponiveis(w);
+                const disponivel = estado === 'aberto' && vagas > 0;
+                const cheio = vagas <= 0;
+                
+                const restricaoBadge = w.anoRestrito ? `<span class="exclusivo-badge" style="background: var(--azul-claro);">Só ${anoNomes[w.anoRestrito]}</span>` : '';
+
+                let vagasHTML = '';
+                if (!temTurnos(w)) {
+                    vagasHTML = `<span class="turno ${cheio ? 'lotado' : 'unico'}">${vagas} vagas (de ${limite})</span>`;
+                } else {
+                    const t1 = getVagasTurno(w, 1);
+                    const t2 = getVagasTurno(w, 2);
+                    vagasHTML = `
+                        <span class="turno ${t1.ocupadas >= t1.total ? 'lotado' : 'disponivel'}">T1: ${t1.total - t1.ocupadas} vagas</span>
+                        <span class="turno ${t2.ocupadas >= t2.total ? 'lotado' : 'disponivel'}">T2: ${t2.total - t2.ocupadas} vagas</span>
+                    `;
+                }
+
+                return `
+                    <label class="checkbox-item ${!disponivel ? 'disabled' : ''} ${cheio ? 'full' : ''}" data-id="${w.id}" data-exclusivo="${w.exclusivo}">
+                        <input type="checkbox" name="workshops" value="${w.id}" ${!disponivel ? 'disabled' : ''} onchange="handleWorkshopSelection(this)">
+                        <div class="workshop-info">
+                            <h4>
+                                ${w.nome}
+                                ${w.exclusivo ? '<span class="exclusivo-badge">Exclusivo</span>' : ''}
+                                ${restricaoBadge}
+                            </h4>
+                            ${w.descricao ? `<p>${w.descricao}</p>` : ''}
+                            <div class="vagas-info">${vagasHTML}</div>
+                            ${cheio ? '<p style="color: #dc2626; font-weight: 600; margin-top: 0.5rem;">⚠️ Workshop lotado - escolhe outro</p>' : ''}
+                        </div>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function handleWorkshopSelection(checkbox) {
+            const workshopId = checkbox.value;
+            const workshop = workshops.find(w => w.id === workshopId);
+            const allCheckboxes = document.querySelectorAll('input[name="workshops"]');
+            const checkedBoxes = document.querySelectorAll('input[name="workshops"]:checked');
+            
+            // Se selecionou exclusivo, desmarcar outros
+            if (checkbox.checked && workshop.exclusivo) {
+                allCheckboxes.forEach(cb => {
+                    if (cb !== checkbox) {
+                        cb.checked = false;
+                        cb.closest('.checkbox-item').classList.remove('selected');
+                    }
+                });
+            }
+            
+            // Se já tem exclusivo, não permitir outros
+            const temExclusivo = Array.from(checkedBoxes).some(cb => {
+                const w = workshops.find(w => w.id === cb.value);
+                return w && w.exclusivo;
+            });
+            
+            if (temExclusivo && !workshop.exclusivo && checkbox.checked) {
+                checkbox.checked = false;
+                showMessage('warning', 'Já selecionaste o workshop exclusivo. Não podes inscrever-te noutros.');
+                return;
+            }
+
+            // Sessões com só 1 workshop permitido
+            if (currentSession && currentSession.workshopsObrigatorios === 1) {
+                if (checkbox.checked) {
+                    allCheckboxes.forEach(cb => {
+                        if (cb !== checkbox) {
+                            cb.checked = false;
+                            cb.closest('.checkbox-item').classList.remove('selected');
+                        }
+                    });
+                }
+            }
+            
+            checkbox.closest('.checkbox-item').classList.toggle('selected', checkbox.checked);
+        }
+
+        function renderWorkshopsAdmin() {
+            const container = document.getElementById('workshops-admin');
+            if (workshops.length === 0) {
+                container.innerHTML = '<div class="empty-state">Crie o primeiro workshop!</div>';
+                return;
+            }
+            
+            const anoNomes = { '12ano': '12.º Ano', '11ano': '11.º Ano', '10ano': '10.º Ano' };
+
+            container.innerHTML = workshops.map(w => {
+                const estado = getEstadoWorkshop(w);
+                const inscritos = w.inscritos || [];
+                const isExpanded = expandedWorkshops.has(w.id);
+
+                const badges = {
+                    pendente: '<span class="badge badge-pending">Brevemente</span>',
+                    aberto: '<span class="badge badge-open">Aberto</span>',
+                    encerrado: '<span class="badge badge-closed">Encerrado</span>',
+                    lotado: '<span class="badge badge-full">Lotado</span>'
+                };
+                
+                const restricaoBadge = w.anoRestrito ? `<span class="exclusivo-badge" style="background: var(--azul-claro);">Só ${anoNomes[w.anoRestrito]}</span>` : '';
+
+                let inscritosHTML = '';
+                if (isExpanded) {
+                    if (inscritos.length === 0) {
+                        inscritosHTML = '<div class="inscritos-container"><p style="text-align:center;color:var(--texto-medio);">Sem inscritos</p></div>';
+                    } else if (w.exclusivo) {
+                        // Workshop exclusivo - limites diferentes por ano
+                        inscritosHTML = `
+                            <div class="inscritos-container">
+                                <p style="font-size:0.85rem;color:var(--texto-medio);margin-bottom:0.5rem;">
+                                    Total: ${inscritos.length} inscritos (Exclusivo)<br>
+                                    <small>Limites: 12.º=25 | 11.º=31 | 10.º=26</small>
+                                </p>
+                                <div class="turno-list">
+                                    ${inscritos.map((i, idx) => `<div class="aluno">${idx + 1}. ${i.numero}</div>`).join('')}
+                                </div>
+                            </div>
+                        `;
+                    } else if (w.anoRestrito === '10ano') {
+                        // Workshop restrito ao 10.º ano - lista simples (26 vagas)
+                        inscritosHTML = `
+                            <div class="inscritos-container">
+                                <p style="font-size:0.85rem;color:var(--texto-medio);margin-bottom:0.5rem;">
+                                    Total: ${inscritos.length}/26 (${anoNomes[w.anoRestrito]})
+                                </p>
+                                <div class="turno-list">
+                                    ${inscritos.map((i, idx) => `<div class="aluno">${idx + 1}. ${i.numero}</div>`).join('')}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Workshops normais - mostrar divisões para cada ano
+                        // 12º ano: T1 (1-25), T2 (26-50)
+                        // 11º ano: T1 (1-31), T2 (32-62)
+                        // 10º ano: Total (1-26)
+                        
+                        const turno1_12 = inscritos.slice(0, 25);
+                        const turno2_12 = inscritos.slice(25, 50);
+                        const turno1_11 = inscritos.slice(0, 31);
+                        const turno2_11 = inscritos.slice(31, 62);
+                        
+                        inscritosHTML = `
+                            <div class="inscritos-container">
+                                <p style="font-size:0.85rem;color:var(--texto-medio);margin-bottom:0.75rem;padding:0.5rem;background:#f0f0f0;border-radius:6px;">
+                                    <strong>Limites:</strong> 
+                                    12º (${Math.min(inscritos.length, 50)}/50: T1=${turno1_12.length}/25, T2=${turno2_12.length}/25) | 
+                                    11º (${Math.min(inscritos.length, 62)}/62: T1=${turno1_11.length}/31, T2=${turno2_11.length}/31) | 
+                                    10º (${Math.min(inscritos.length, 26)}/26)
+                                </p>
+                                <div class="turnos-display">
+                                    <div class="turno-card turno1">
+                                        <h4>Primeiros 31 (T1) <span class="count">${Math.min(inscritos.length, 31)}</span></h4>
+                                        <div class="turno-list">
+                                            ${inscritos.slice(0, 31).length > 0 ? inscritos.slice(0, 31).map((i, idx) => `<div class="aluno" style="${idx >= 25 ? 'color: var(--azul-claro);' : ''}">${idx + 1}. ${i.numero} ${idx >= 25 ? '<small>(só 11º)</small>' : ''}</div>`).join('') : '<p style="color:var(--texto-medio);">-</p>'}
+                                        </div>
+                                    </div>
+                                    <div class="turno-card turno2">
+                                        <h4>Seguintes (T2) <span class="count">${Math.max(0, inscritos.length - 31)}</span></h4>
+                                        <div class="turno-list">
+                                            ${inscritos.slice(31).length > 0 ? inscritos.slice(31).map((i, idx) => `<div class="aluno">${idx + 1}. ${i.numero}</div>`).join('') : '<p style="color:var(--texto-medio);">-</p>'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                return `
+                    <div class="workshop-card">
+                        <div class="workshop-header">
+                            <h3 class="workshop-title">
+                                ${w.nome}
+                                ${w.exclusivo ? '<span class="exclusivo-badge">Exclusivo</span>' : ''}
+                                ${restricaoBadge}
+                            </h3>
+                            ${badges[estado]}
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--texto-medio);">
+                            ${inscritos.length}${w.exclusivo || w.anoRestrito ? '/25' : ''} inscritos • Limite: ${formatDate(w.dataLimite)}
+                        </p>
+                        <div class="workshop-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="toggleInscritos('${w.id}')">
+                                ${isExpanded ? 'Ocultar' : 'Ver'} (${inscritos.length})
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="removerWorkshop('${w.id}')">Eliminar</button>
+                        </div>
+                        ${inscritosHTML}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleInscritos(id) {
+            if (expandedWorkshops.has(id)) expandedWorkshops.delete(id);
+            else expandedWorkshops.add(id);
+            renderWorkshopsAdmin();
+        }
+
+        // ============================================
+        // CRUD
+        // ============================================
+
+        async function handleCriarWorkshop(e) {
+            e.preventDefault();
+            if (!db) { showMessage('error', 'Configure o Firebase primeiro'); return; }
+
+            const btn = document.getElementById('btn-criar');
+            btn.disabled = true;
+
+            try {
+                const workshop = {
+                    nome: document.getElementById('workshop-nome').value,
+                    descricao: document.getElementById('workshop-desc').value,
+                    dataInicio: document.getElementById('workshop-inicio').value,
+                    dataLimite: document.getElementById('workshop-limite').value,
+                    exclusivo: document.getElementById('workshop-exclusivo').checked,
+                    anoRestrito: document.getElementById('workshop-ano-restrito').value || null,
+                    inscritos: [],
+                    criadoEm: new Date().toISOString()
+                };
+
+                if (new Date(workshop.dataInicio) >= new Date(workshop.dataLimite)) {
+                    throw new Error('Data de início deve ser antes do limite');
+                }
+
+                await db.collection('workshops').add(workshop);
+                document.getElementById('form-workshop').reset();
+                showMessage('success', 'Workshop criado!');
+            } catch (err) {
+                showMessage('error', err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function handleInscricao(e) {
+            e.preventDefault();
+            if (!db) { showMessage('error', 'Configure o Firebase primeiro'); return; }
+
+            const btn = document.getElementById('btn-inscricao');
+            btn.disabled = true;
+
+            try {
+                const numero = document.getElementById('aluno-numero').value.toUpperCase().trim();
+                const selectedIds = Array.from(document.querySelectorAll('input[name="workshops"]:checked')).map(cb => cb.value);
+
+                if (!numero) throw new Error('Introduz o teu número');
+                if (selectedIds.length === 0) throw new Error('Seleciona pelo menos um workshop');
+
+                // Verificar se já está inscrito em algum workshop
+                for (const w of workshops) {
+                    if ((w.inscritos || []).some(i => i.numero === numero)) {
+                        throw new Error(`Já estás inscrito no workshop "${w.nome}"`);
+                    }
+                }
+
+                const selectedWorkshops = selectedIds.map(id => workshops.find(w => w.id === id));
+                const temExclusivo = selectedWorkshops.some(w => w.exclusivo);
+                const workshopsObrigatorios = currentSession ? currentSession.workshopsObrigatorios : 2;
+
+                // Verificar se workshops selecionados estão disponíveis para esta sessão
+                for (const w of selectedWorkshops) {
+                    if (!isWorkshopDisponivelParaSessao(w)) {
+                        const anoNomes = { '12ano': '12.º ano', '11ano': '11.º ano', '10ano': '10.º ano' };
+                        throw new Error(`O workshop "${w.nome}" é exclusivo para ${anoNomes[w.anoRestrito]}`);
+                    }
+                }
+
+                // Validar regras
+                if (workshopsObrigatorios === 1) {
+                    if (selectedIds.length !== 1) {
+                        throw new Error(`${currentSession.nome}: deves selecionar apenas 1 workshop`);
+                    }
+                } else {
+                    if (temExclusivo) {
+                        if (selectedIds.length !== 1) {
+                            throw new Error('O Workshop 1 é exclusivo - não podes inscrever-te noutros workshops');
+                        }
+                    } else {
+                        if (selectedIds.length < 2) {
+                            throw new Error('⚠️ Tens de te inscrever em 2 workshops! Seleciona mais um workshop para concluir a inscrição.');
+                        }
+                        if (selectedIds.length > 2) {
+                            throw new Error('Só podes selecionar 2 workshops (ou apenas o exclusivo)');
+                        }
+                    }
+                }
+
+                // Verificar vagas
+                for (const w of selectedWorkshops) {
+                    if (getVagasDisponiveis(w) <= 0) {
+                        throw new Error(`⚠️ "${w.nome}" está lotado! Escolhe outro workshop para te inscreveres.`);
+                    }
+                }
+
+                // Inscrever
+                const inscricao = { numero, dataInscricao: new Date().toISOString() };
+                const batch = db.batch();
+                
+                for (const id of selectedIds) {
+                    batch.update(db.collection('workshops').doc(id), {
+                        inscritos: firebase.firestore.FieldValue.arrayUnion(inscricao)
+                    });
+                }
+                
+                await batch.commit();
+
+                document.getElementById('form-inscricao').reset();
+                document.querySelectorAll('.checkbox-item').forEach(item => item.classList.remove('selected'));
+                
+                // Mensagem de sucesso personalizada
+                let mensagemSucesso = '✅ Concluíste a tua inscrição!';
+                
+                if (temExclusivo) {
+                    mensagemSucesso += ' Inscreveste-te no Workshop 1 (exclusivo).';
+                } else if (workshopsObrigatorios === 1) {
+                    // 10.º ano - 1 workshop
+                    const nomeWorkshop = selectedWorkshops[0].nome;
+                    mensagemSucesso += ` Inscreveste-te em "${nomeWorkshop}".`;
+                } else {
+                    // 11.º ou 12.º ano - 2 workshops
+                    const nomes = selectedWorkshops.map(w => w.nome).join('" e "');
+                    mensagemSucesso += ` Inscreveste-te em "${nomes}".`;
+                    
+                    // Adicionar info de turnos se aplicável
+                    if (currentSession && currentSession.temTurnos) {
+                        const turnosInfo = selectedWorkshops.map(w => {
+                            if (temTurnos(w)) {
+                                const pos = (w.inscritos || []).length + 1;
+                                const turno = getTurno(w, pos);
+                                return `${w.nome}: Turno ${turno}`;
+                            }
+                            return null;
+                        }).filter(t => t !== null);
+                        
+                        if (turnosInfo.length > 0) {
+                            mensagemSucesso += ' | ' + turnosInfo.join(', ');
+                        }
+                    }
+                }
+                
+                showMessage('success', mensagemSucesso);
+            } catch (err) {
+                showMessage('error', err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function removerWorkshop(id) {
+            if (!db) return;
+            if (confirm('Eliminar este workshop?')) {
+                await db.collection('workshops').doc(id).delete();
+                showMessage('success', 'Workshop eliminado');
+            }
+        }
+
+        // ============================================
+        // QR CODES
+        // ============================================
+
+        function renderQRCodes() {
+            const container = document.getElementById('qr-codes-container');
+            const baseURL = window.location.origin + window.location.pathname;
+            
+            container.innerHTML = Object.values(SESSOES).map(s => {
+                let regrasHTML = '';
+                if (s.id === '10ano') {
+                    regrasHTML = '<strong>Regra:</strong> Inscrição em apenas 1 workshop (26 vagas cada)';
+                } else if (s.id === '11ano') {
+                    regrasHTML = '<strong>Regra:</strong> Workshop exclusivo = 1 inscrição (31 vagas)<br>Outros workshops = 2 inscrições obrigatórias (31+31 por turno)';
+                } else {
+                    regrasHTML = '<strong>Regra:</strong> Workshop exclusivo = 1 inscrição (25 vagas)<br>Outros workshops = 2 inscrições obrigatórias (25+25 por turno)';
+                }
+                
+                return `
+                <div class="card qr-card">
+                    <h3>${s.nome}</h3>
+                    <p class="session-info">${s.data} • ${s.periodo}</p>
+                    <div class="qr-container" id="qr-${s.id}"></div>
+                    <div class="rules">${regrasHTML}</div>
+                </div>
+            `}).join('');
+            
+            setTimeout(() => {
+                Object.values(SESSOES).forEach(s => {
+                    const el = document.getElementById(`qr-${s.id}`);
+                    el.innerHTML = '';
+                    new QRCode(el, {
+                        text: `${baseURL}?sessao=${s.id}`,
+                        width: 180,
+                        height: 180,
+                        colorDark: '#1e3a8a',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                });
+            }, 100);
+        }
+
+        // ============================================
+        // ESTATÍSTICAS E PDF
+        // ============================================
+
+        function renderEstatisticas() {
+            const total = workshops.reduce((acc, w) => acc + (w.inscritos || []).length, 0);
+            const exclusivos = workshops.filter(w => w.exclusivo).reduce((acc, w) => acc + (w.inscritos || []).length, 0);
+            
+            document.getElementById('stats-overview').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total Inscrições</div></div>
+                <div class="stat-card"><div class="stat-value">${workshops.length}</div><div class="stat-label">Workshops</div></div>
+                <div class="stat-card"><div class="stat-value">${exclusivos}</div><div class="stat-label">No Exclusivo</div></div>
+            `;
+
+            const anoNomes = { '12ano': '12.º Ano', '11ano': '11.º Ano', '10ano': '10.º Ano' };
+            
+            document.getElementById('workshop-lists').innerHTML = workshops.map(w => {
+                const inscritos = w.inscritos || [];
+                let listHTML = '';
+                
+                const restricaoBadge = w.anoRestrito ? `<span class="exclusivo-badge" style="background: var(--azul-claro);">Só ${anoNomes[w.anoRestrito]}</span>` : '';
+                
+                if (w.exclusivo) {
+                    // Workshop exclusivo - limites diferentes por ano
+                    listHTML = inscritos.length === 0 
+                        ? '<p style="color:var(--texto-medio);">Sem inscritos</p>'
+                        : `<p style="font-size:0.85rem;color:var(--texto-medio);margin-bottom:0.5rem;">Total: ${inscritos.length} inscritos<br><small>Limites: 12.º=25 | 11.º=31 | 10.º=26</small></p>
+                           <table><thead><tr><th>#</th><th>Número</th><th>Data</th></tr></thead><tbody>
+                            ${inscritos.map((i, idx) => `<tr><td>${idx+1}</td><td><strong>${i.numero}</strong></td><td>${formatDateTime(i.dataInscricao)}</td></tr>`).join('')}
+                        </tbody></table>`;
+                } else if (w.anoRestrito === '10ano') {
+                    // Workshop restrito ao 10.º ano - lista simples (26 vagas)
+                    listHTML = inscritos.length === 0 
+                        ? '<p style="color:var(--texto-medio);">Sem inscritos</p>'
+                        : `<p style="font-size:0.85rem;color:var(--texto-medio);margin-bottom:0.5rem;">Total: ${inscritos.length}/26</p>
+                           <table><thead><tr><th>#</th><th>Número</th><th>Data</th></tr></thead><tbody>
+                            ${inscritos.map((i, idx) => `<tr><td>${idx+1}</td><td><strong>${i.numero}</strong></td><td>${formatDateTime(i.dataInscricao)}</td></tr>`).join('')}
+                        </tbody></table>`;
+                } else {
+                    const t1 = inscritos.slice(0, 31);
+                    const t2 = inscritos.slice(31, 62);
+                    listHTML = `
+                        <p style="font-size:0.85rem;color:var(--texto-medio);margin-bottom:1rem;padding:0.5rem;background:#f5f5f5;border-radius:6px;">
+                            <strong>Limites:</strong> 12º ano (T1: 25 + T2: 25 = 50) | 11º ano (T1: 31 + T2: 31 = 62) | 10º ano (26 total)
+                        </p>
+                        <div class="turnos-display">
+                            <div>
+                                <h4 style="margin-bottom:0.5rem;color:var(--verde);">Turno 1 - Primeiros 31 (${t1.length})</h4>
+                                ${t1.length === 0 ? '<p style="color:var(--texto-medio);">-</p>' : t1.map((i,idx) => `<div style="font-family:monospace;padding:0.25rem 0;${idx >= 25 ? 'color:var(--azul-claro);' : ''}">${idx+1}. ${i.numero}${idx >= 25 ? ' <small>(só 11º)</small>' : ''}</div>`).join('')}
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom:0.5rem;color:var(--azul-claro);">Turno 2 - Seguintes (${t2.length})</h4>
+                                ${t2.length === 0 ? '<p style="color:var(--texto-medio);">-</p>' : t2.map((i,idx) => `<div style="font-family:monospace;padding:0.25rem 0;">${idx+1}. ${i.numero}</div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div style="margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid #e2e8f0;">
+                        <h3 style="color:var(--azul-principal);margin-bottom:1rem;">
+                            ${w.nome} ${w.exclusivo ? '<span class="exclusivo-badge">Exclusivo</span>' : ''} ${restricaoBadge}
+                            <span style="font-weight:normal;color:var(--texto-medio);"> - ${inscritos.length} inscritos</span>
+                        </h3>
+                        ${listHTML}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFillColor(30, 58, 138);
+            doc.rect(0, 0, 210, 28, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text('ROSÁRIO SUMMIT 2026', 14, 14);
+            doc.setFontSize(10);
+            doc.text('Listagem de Inscrições por Workshop', 14, 22);
+            
+            const anoNomes = { '12ano': '12.º Ano', '11ano': '11.º Ano', '10ano': '10.º Ano' };
+            let y = 38;
+            
+            workshops.forEach(w => {
+                const inscritos = w.inscritos || [];
+                if (y > 260) { doc.addPage(); y = 20; }
+                
+                doc.setTextColor(30, 58, 138);
+                doc.setFontSize(12);
+                let titulo = w.nome;
+                if (w.exclusivo) titulo += ' (EXCLUSIVO - 12.º:25/11.º:31/10.º:26)';
+                else if (w.anoRestrito === '10ano') titulo += ` (Só ${anoNomes[w.anoRestrito]} - 26 vagas)`;
+                else if (w.anoRestrito) titulo += ` (Só ${anoNomes[w.anoRestrito]} - com turnos)`;
+                doc.text(`${titulo} - ${inscritos.length} inscritos`, 14, y);
+                y += 6;
+                
+                if (inscritos.length > 0) {
+                    if (w.exclusivo || w.anoRestrito === '10ano') {
+                        // Workshop exclusivo ou restrito ao 10.º ano - lista simples
+                        doc.autoTable({
+                            startY: y,
+                            head: [['#', 'Número', 'Data']],
+                            body: inscritos.map((i, idx) => [idx+1, i.numero, formatDateTime(i.dataInscricao)]),
+                            theme: 'striped',
+                            headStyles: { fillColor: [30, 58, 138] },
+                            margin: { left: 14, right: 14 }
+                        });
+                    } else {
+                        // Mostrar limites por ano
+                        doc.setFontSize(9);
+                        doc.setTextColor(100);
+                        doc.text(`12º: T1(1-25) + T2(26-50) = 50 | 11º: T1(1-31) + T2(32-62) = 62 | 10º: 1-26`, 14, y);
+                        y += 5;
+                        
+                        const t1 = inscritos.slice(0, 31);
+                        const t2 = inscritos.slice(31, 62);
+                        
+                        doc.setFontSize(10);
+                        doc.setTextColor(5, 150, 105);
+                        doc.text(`Turno 1 - Primeiros 31 (${t1.length})`, 14, y);
+                        doc.setTextColor(59, 130, 246);
+                        doc.text(`Turno 2 - Seguintes (${t2.length})`, 110, y);
+                        y += 4;
+                        
+                        const maxRows = Math.max(t1.length, t2.length);
+                        const tableData = [];
+                        for (let i = 0; i < maxRows; i++) {
+                            const t1Text = t1[i] ? `${i+1}. ${t1[i].numero}${i >= 25 ? ' *' : ''}` : '';
+                            const t2Text = t2[i] ? `${i+1}. ${t2[i].numero}` : '';
+                            tableData.push([t1Text, t2Text]);
+                        }
+                        
+                        doc.autoTable({
+                            startY: y,
+                            head: [['Turno 1 (até 31)', 'Turno 2']],
+                            body: tableData.length > 0 ? tableData : [['Sem inscritos', 'Sem inscritos']],
+                            theme: 'striped',
+                            headStyles: { fillColor: [30, 58, 138] },
+                            margin: { left: 14, right: 14 },
+                            didDrawCell: function(data) {
+                                // Marcar alunos 26-31 com cor diferente (só para 11º)
+                                if (data.column.index === 0 && data.row.index >= 25 && data.row.index < 31) {
+                                    doc.setTextColor(59, 130, 246);
+                                }
+                            }
+                        });
+                        
+                        // Nota de rodapé
+                        y = doc.lastAutoTable.finalY + 3;
+                        doc.setFontSize(8);
+                        doc.setTextColor(100);
+                        doc.text('* Posições 26-31 do Turno 1 aplicam-se apenas ao 11º ano', 14, y);
+                    }
+                    y = doc.lastAutoTable.finalY + 12;
+                } else {
+                    doc.setTextColor(100);
+                    doc.setFontSize(10);
+                    doc.text('Sem inscritos', 14, y);
+                    y += 10;
+                }
+            });
+            
+            doc.save('rosario-summit-2026-inscricoes.pdf');
+            showMessage('success', 'PDF exportado!');
+        }
+
+        // ============================================
+        // TABS E SESSÃO
+        // ============================================
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            if (tabId === 'qrcodes') renderQRCodes();
+            if (tabId === 'estatisticas') renderEstatisticas();
+            if (tabId === 'config') loadFirebaseConfigToForm();
+        }
+
+        function initSession() {
+            const sessaoId = new URLSearchParams(window.location.search).get('sessao');
+            if (sessaoId && SESSOES[sessaoId]) {
+                currentSession = SESSOES[sessaoId];
+                
+                document.getElementById('session-indicator').innerHTML = `
+                    <div class="session-badge">
+                        📅 ${currentSession.data} • ${currentSession.periodo} • ${currentSession.nome}
+                    </div>
+                `;
+                
+                const rules = document.getElementById('rules-display');
+                const hint = document.getElementById('selection-hint');
+                
+                if (currentSession.id === '10ano') {
+                    rules.innerHTML = `
+                        <strong>📋 Regras - ${currentSession.nome}</strong>
+                        <ul>
+                            <li>Inscreve-te em <strong>apenas 1 workshop</strong></li>
+                            <li>Cada workshop tem <strong>26 vagas</strong></li>
+                            <li>Se o workshop estiver lotado, escolhe outro</li>
+                        </ul>
+                    `;
+                    hint.textContent = '(escolhe 1)';
+                } else if (currentSession.id === '11ano') {
+                    rules.innerHTML = `
+                        <strong>📋 Regras - ${currentSession.nome}</strong>
+                        <ul>
+                            <li><strong>Workshop Exclusivo:</strong> Se escolheres, não podes escolher mais nenhum (31 vagas)</li>
+                            <li><strong>Outros workshops:</strong> Tens de escolher <strong>2 workshops</strong> (62 vagas cada: 31 Turno 1 + 31 Turno 2)</li>
+                            <li>Os primeiros 31 inscritos ficam no <strong>Turno 1</strong>, os seguintes no <strong>Turno 2</strong></li>
+                        </ul>
+                    `;
+                    hint.textContent = '(exclusivo=1 OU outros=2)';
+                } else {
+                    rules.innerHTML = `
+                        <strong>📋 Regras - ${currentSession.nome}</strong>
+                        <ul>
+                            <li><strong>Workshop Exclusivo:</strong> Se escolheres, não podes escolher mais nenhum (25 vagas)</li>
+                            <li><strong>Outros workshops:</strong> Tens de escolher <strong>2 workshops</strong> (50 vagas cada: 25 Turno 1 + 25 Turno 2)</li>
+                            <li>Os primeiros 25 inscritos ficam no <strong>Turno 1</strong>, os seguintes no <strong>Turno 2</strong></li>
+                        </ul>
+                    `;
+                    hint.textContent = '(exclusivo=1 OU outros=2)';
+                }
+            } else {
+                document.getElementById('rules-display').classList.add('hidden');
+            }
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSession();
+            initFirebase();
+        });
+    </script>
+</body>
+</html>
