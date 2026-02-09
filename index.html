@@ -1087,6 +1087,16 @@
         <div id="tab-qrcodes" class="tab-content hidden">
             <h2 class="section-title">QR Codes para Inscrições</h2>
             <p style="color: var(--texto-medio); margin-bottom: 2rem;">Imprima os códigos QR. Cada um direciona para a sessão correta com as regras específicas.</p>
+            <div class="card no-print" style="margin-bottom: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="qr-base-url">URL base da aplicação</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="qr-base-url" placeholder="https://seusite.github.io/rosario-summit-2026" style="flex: 1;">
+                        <button class="btn btn-primary btn-sm" onclick="atualizarQRCodes()">Gerar QR Codes</button>
+                    </div>
+                    <small style="color: var(--texto-medio);">Insira o URL completo do GitHub Pages (sem a barra final)</small>
+                </div>
+            </div>
             <div class="grid-3" id="qr-codes-container"></div>
             <div style="margin-top: 2rem; text-align: center;" class="no-print">
                 <button class="btn btn-secondary btn-sm" onclick="window.print()" style="display: inline-flex;">Imprimir QR Codes</button>
@@ -1852,7 +1862,24 @@
 
         function renderQRCodes() {
             const container = document.getElementById('qr-codes-container');
-            const baseURL = window.location.origin + window.location.pathname;
+            const urlInput = document.getElementById('qr-base-url');
+            
+            // Definir URL padrão se vazio
+            if (!urlInput.value) {
+                let defaultURL = window.location.href.split('?')[0];
+                if (defaultURL.endsWith('/')) {
+                    defaultURL = defaultURL.slice(0, -1);
+                }
+                urlInput.value = defaultURL;
+            }
+            
+            const baseURL = urlInput.value.trim();
+            
+            // Verificar se a biblioteca QRCode está carregada
+            if (typeof QRCode === 'undefined') {
+                container.innerHTML = '<div class="empty-state" style="color: var(--vermelho);">⚠️ Erro: Biblioteca de QR Codes não carregada. Verifique a ligação à internet e recarregue a página.</div>';
+                return;
+            }
             
             container.innerHTML = Object.values(SESSOES).map(s => {
                 const regrasHTML = `
@@ -1862,11 +1889,14 @@
                     • Máximo: 2 inscrições por aluno
                 `;
                 
+                const qrURL = `${baseURL}?sessao=${s.id}`;
+                
                 return `
                 <div class="card qr-card">
                     <h3>${s.nome}</h3>
                     <p class="session-info">${s.data} • ${s.periodo}</p>
                     <div class="qr-container" id="qr-${s.id}"></div>
+                    <p style="font-size: 0.7rem; color: var(--texto-medio); word-break: break-all; margin-top: 0.5rem;">${qrURL}</p>
                     <div class="rules" style="font-size: 0.8rem; text-align: left;">${regrasHTML}</div>
                 </div>
             `}).join('');
@@ -1874,17 +1904,38 @@
             setTimeout(() => {
                 Object.values(SESSOES).forEach(s => {
                     const el = document.getElementById(`qr-${s.id}`);
-                    el.innerHTML = '';
-                    new QRCode(el, {
-                        text: `${baseURL}?sessao=${s.id}`,
-                        width: 180,
-                        height: 180,
-                        colorDark: '#1e3a8a',
-                        colorLight: '#ffffff',
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
+                    if (el) {
+                        el.innerHTML = '';
+                        try {
+                            new QRCode(el, {
+                                text: `${baseURL}?sessao=${s.id}`,
+                                width: 180,
+                                height: 180,
+                                colorDark: '#1e3a8a',
+                                colorLight: '#ffffff',
+                                correctLevel: QRCode.CorrectLevel.H
+                            });
+                        } catch (err) {
+                            console.error('Erro ao gerar QR code:', err);
+                            el.innerHTML = '<p style="color: var(--vermelho);">Erro ao gerar QR</p>';
+                        }
+                    }
                 });
-            }, 100);
+            }, 200);
+        }
+        
+        function atualizarQRCodes() {
+            const url = document.getElementById('qr-base-url').value.trim();
+            if (!url) {
+                showMessage('error', 'Insira o URL base da aplicação');
+                return;
+            }
+            if (!url.startsWith('http')) {
+                showMessage('error', 'O URL deve começar com http:// ou https://');
+                return;
+            }
+            renderQRCodes();
+            showMessage('success', 'QR Codes atualizados!');
         }
 
         // ============================================
