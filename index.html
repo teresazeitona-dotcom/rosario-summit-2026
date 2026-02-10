@@ -1066,8 +1066,8 @@
                             <ul style="margin: 0.5rem 0 0 1.25rem; color: var(--texto-medio);">
                                 <li><strong>Workshop 1 (Exclusivo):</strong> para todos os anos - quem se inscreve não pode inscrever-se noutros</li>
                                 <li><strong>Workshop 2:</strong> apenas para 12.º ano</li>
-                                <li><strong>Outros workshops:</strong> cada aluno inscreve-se em <strong>2 workshops</strong></li>
-                                <li>Nenhum aluno pode ter mais de <strong>2 inscrições</strong> no total</li>
+                                <li><strong>11.º e 12.º ano:</strong> cada aluno inscreve-se em <strong>2 workshops</strong></li>
+                                <li><strong>10.º ano:</strong> cada aluno inscreve-se em <strong>1 workshop</strong></li>
                             </ul>
                         </div>
                         <button type="submit" class="btn btn-gold" id="btn-criar">Criar Workshop</button>
@@ -1154,7 +1154,7 @@
                 nome: '10.º Ano',
                 data: 'Fase 2',
                 periodo: 'Inscrições',
-                workshopsObrigatorios: 2,
+                workshopsObrigatorios: 1,
                 temTurnos: false
             }
         };
@@ -1655,26 +1655,38 @@
                 }
             }
             
+            // Obter número de workshops obrigatórios para esta sessão
+            const maxInscricoes = currentSession ? currentSession.workshopsObrigatorios : 2;
+            
             if (inscricoes.length === 0) {
                 container.style.display = 'block';
                 container.style.background = '#f0f7ff';
                 container.style.color = 'var(--azul-principal)';
-                container.innerHTML = '📝 Ainda não tens inscrições. Escolhe <strong>2 workshops</strong> (ou o exclusivo).';
+                if (maxInscricoes === 1) {
+                    container.innerHTML = '📝 Ainda não tens inscrições. Escolhe <strong>1 workshop</strong> (ou o exclusivo).';
+                } else {
+                    container.innerHTML = '📝 Ainda não tens inscrições. Escolhe <strong>2 workshops</strong> (ou o exclusivo).';
+                }
             } else if (inscritoEmExclusivo) {
                 container.style.display = 'block';
                 container.style.background = '#fef3c7';
                 container.style.color = '#92400e';
                 container.innerHTML = `⚠️ Já estás inscrito no <strong>Workshop Exclusivo</strong>. Não podes inscrever-te em mais nenhum.`;
-            } else if (inscricoes.length >= 2) {
+            } else if (inscricoes.length >= maxInscricoes) {
                 container.style.display = 'block';
                 container.style.background = '#dcfce7';
                 container.style.color = '#166534';
-                container.innerHTML = `✅ Já tens 2 inscrições: <strong>${inscricoes.join('</strong> e <strong>')}</strong>. A tua inscrição está completa!`;
+                if (maxInscricoes === 1) {
+                    container.innerHTML = `✅ Já tens 1 inscrição em "<strong>${inscricoes[0]}</strong>". A tua inscrição está completa!`;
+                } else {
+                    container.innerHTML = `✅ Já tens ${inscricoes.length} inscrições: <strong>${inscricoes.join('</strong> e <strong>')}</strong>. A tua inscrição está completa!`;
+                }
             } else {
                 container.style.display = 'block';
                 container.style.background = '#fef3c7';
                 container.style.color = '#92400e';
-                container.innerHTML = `⚠️ Tens 1 inscrição em "<strong>${inscricoes[0]}</strong>". Escolhe mais <strong>1 workshop</strong> para concluir.`;
+                const faltam = maxInscricoes - inscricoes.length;
+                container.innerHTML = `⚠️ Tens 1 inscrição em "<strong>${inscricoes[0]}</strong>". Escolhe mais <strong>${faltam} workshop</strong> para concluir.`;
             }
         }
 
@@ -1751,9 +1763,16 @@
                     throw new Error(`Já estás inscrito no Workshop Exclusivo. Não podes inscrever-te em mais nenhum.`);
                 }
                 
-                // Verificar se já tem 2 inscrições
-                if (inscricoesExistentes.length >= 2) {
-                    throw new Error(`Já tens 2 inscrições (${inscricoesExistentes.join(' e ')}). Não podes inscrever-te em mais workshops.`);
+                // Obter número de workshops obrigatórios para esta sessão
+                const maxInscricoes = currentSession ? currentSession.workshopsObrigatorios : 2;
+                
+                // Verificar se já atingiu o limite de inscrições
+                if (inscricoesExistentes.length >= maxInscricoes) {
+                    if (maxInscricoes === 1) {
+                        throw new Error(`Já tens 1 inscrição em "${inscricoesExistentes[0]}". Não podes inscrever-te em mais workshops.`);
+                    } else {
+                        throw new Error(`Já tens ${maxInscricoes} inscrições (${inscricoesExistentes.join(' e ')}). Não podes inscrever-te em mais workshops.`);
+                    }
                 }
 
                 const selectedWorkshops = selectedIds.map(id => workshops.find(w => w.id === id));
@@ -1780,24 +1799,26 @@
                     // Workshops normais - verificar total de inscrições
                     const totalAposInscricao = inscricoesExistentes.length + selectedIds.length;
                     
-                    if (totalAposInscricao > 2) {
-                        const podeInscrever = 2 - inscricoesExistentes.length;
+                    if (totalAposInscricao > maxInscricoes) {
+                        const podeInscrever = maxInscricoes - inscricoesExistentes.length;
                         if (podeInscrever <= 0) {
-                            throw new Error(`Já tens 2 inscrições. Não podes inscrever-te em mais workshops.`);
+                            throw new Error(`Já tens ${maxInscricoes} inscrição(ões). Não podes inscrever-te em mais workshops.`);
                         }
                         throw new Error(`Já tens ${inscricoesExistentes.length} inscrição(ões). Só podes selecionar mais ${podeInscrever} workshop(s).`);
                     }
                     
-                    // Se não tem nenhuma inscrição, deve escolher 2
-                    if (inscricoesExistentes.length === 0 && selectedIds.length < 2) {
-                        throw new Error('⚠️ Tens de te inscrever em 2 workshops! Seleciona mais um workshop para concluir a inscrição.');
+                    // Verificar se selecionou o número correto de workshops
+                    if (inscricoesExistentes.length === 0) {
+                        if (maxInscricoes === 1 && selectedIds.length !== 1) {
+                            throw new Error('⚠️ Deves selecionar apenas 1 workshop.');
+                        } else if (maxInscricoes === 2 && selectedIds.length < 2) {
+                            throw new Error('⚠️ Tens de te inscrever em 2 workshops! Seleciona mais um workshop para concluir a inscrição.');
+                        }
                     }
                     
-                    // Se já tem 1 inscrição, deve escolher exatamente mais 1
-                    if (inscricoesExistentes.length === 1 && selectedIds.length !== 1) {
-                        if (selectedIds.length > 1) {
-                            throw new Error(`Já tens 1 inscrição em "${inscricoesExistentes[0]}". Só podes selecionar mais 1 workshop.`);
-                        }
+                    // Se já tem 1 inscrição (só para 11º e 12º), deve escolher exatamente mais 1
+                    if (maxInscricoes === 2 && inscricoesExistentes.length === 1 && selectedIds.length > 1) {
+                        throw new Error(`Já tens 1 inscrição em "${inscricoesExistentes[0]}". Só podes selecionar mais 1 workshop.`);
                     }
                 }
 
@@ -1824,21 +1845,28 @@
                 document.querySelectorAll('.checkbox-item').forEach(item => item.classList.remove('selected'));
                 
                 // Mensagem de sucesso personalizada
+                const maxInscricoes = currentSession ? currentSession.workshopsObrigatorios : 2;
                 let mensagemSucesso = '';
                 
                 if (temExclusivo) {
                     mensagemSucesso = '✅ Concluíste a tua inscrição! Inscreveste-te no Workshop Exclusivo.';
+                } else if (maxInscricoes === 1 && selectedIds.length === 1) {
+                    // 10.º ano - 1 workshop
+                    mensagemSucesso = `✅ Concluíste a tua inscrição! Inscreveste-te em "${selectedWorkshops[0].nome}".`;
                 } else if (inscricoesExistentes.length === 0 && selectedIds.length === 2) {
-                    // Primeira inscrição com 2 workshops
+                    // Primeira inscrição com 2 workshops (11.º e 12.º)
                     const nomes = selectedWorkshops.map(w => w.nome).join('" e "');
                     mensagemSucesso = `✅ Concluíste a tua inscrição! Inscreveste-te em "${nomes}".`;
                 } else if (inscricoesExistentes.length === 1 && selectedIds.length === 1) {
-                    // Completou a segunda inscrição
+                    // Completou a segunda inscrição (11.º e 12.º)
                     mensagemSucesso = `✅ Concluíste a tua inscrição! Agora tens 2 workshops: "${inscricoesExistentes[0]}" e "${selectedWorkshops[0].nome}".`;
                 } else {
                     const nomes = selectedWorkshops.map(w => w.nome).join('" e "');
                     mensagemSucesso = `✅ Inscrição confirmada em "${nomes}".`;
                 }
+                
+                // Atualizar verificação de inscrições
+                verificarInscricoesExistentes();
                 
                 showMessage('success', mensagemSucesso);
             } catch (err) {
@@ -1882,12 +1910,22 @@
             }
             
             container.innerHTML = Object.values(SESSOES).map(s => {
-                const regrasHTML = `
-                    <strong>Regras Fase 2:</strong><br>
-                    • Workshop Exclusivo: quem escolhe não pode escolher outros<br>
-                    • Outros workshops: inscrição em <strong>2 workshops</strong><br>
-                    • Máximo: 2 inscrições por aluno
-                `;
+                let regrasHTML = '';
+                if (s.id === '10ano') {
+                    regrasHTML = `
+                        <strong>Regras Fase 2:</strong><br>
+                        • Workshop Exclusivo: quem escolhe não pode escolher outros<br>
+                        • Outros workshops: inscrição em <strong>1 workshop</strong><br>
+                        • Máximo: 1 inscrição por aluno
+                    `;
+                } else {
+                    regrasHTML = `
+                        <strong>Regras Fase 2:</strong><br>
+                        • Workshop Exclusivo: quem escolhe não pode escolher outros<br>
+                        • Outros workshops: inscrição em <strong>2 workshops</strong><br>
+                        • Máximo: 2 inscrições por aluno
+                    `;
+                }
                 
                 const qrURL = `${baseURL}?sessao=${s.id}`;
                 
@@ -2071,17 +2109,30 @@
                 const rules = document.getElementById('rules-display');
                 const hint = document.getElementById('selection-hint');
                 
-                // Regras iguais para todos os anos na Fase 2
-                rules.innerHTML = `
-                    <strong>📋 Regras Fase 2 - ${currentSession.nome}</strong>
-                    <ul>
-                        <li><strong>Workshop Exclusivo:</strong> Se escolheres, não podes escolher mais nenhum</li>
-                        <li><strong>Outros workshops:</strong> Tens de escolher <strong>2 workshops</strong></li>
-                        <li>Não podes ter mais de <strong>2 inscrições</strong> no total</li>
-                        <li>Se o workshop estiver lotado, escolhe outro</li>
-                    </ul>
-                `;
-                hint.textContent = '(exclusivo=1 OU outros=2)';
+                // Regras diferentes para 10.º ano
+                if (currentSession.id === '10ano') {
+                    rules.innerHTML = `
+                        <strong>📋 Regras Fase 2 - ${currentSession.nome}</strong>
+                        <ul>
+                            <li><strong>Workshop Exclusivo:</strong> Se escolheres, não podes escolher mais nenhum</li>
+                            <li><strong>Outros workshops:</strong> Escolhe <strong>1 workshop</strong></li>
+                            <li>Não podes ter mais de <strong>1 inscrição</strong> no total</li>
+                            <li>Se o workshop estiver lotado, escolhe outro</li>
+                        </ul>
+                    `;
+                    hint.textContent = '(escolhe 1)';
+                } else {
+                    rules.innerHTML = `
+                        <strong>📋 Regras Fase 2 - ${currentSession.nome}</strong>
+                        <ul>
+                            <li><strong>Workshop Exclusivo:</strong> Se escolheres, não podes escolher mais nenhum</li>
+                            <li><strong>Outros workshops:</strong> Tens de escolher <strong>2 workshops</strong></li>
+                            <li>Não podes ter mais de <strong>2 inscrições</strong> no total</li>
+                            <li>Se o workshop estiver lotado, escolhe outro</li>
+                        </ul>
+                    `;
+                    hint.textContent = '(exclusivo=1 OU outros=2)';
+                }
             } else {
                 document.getElementById('rules-display').classList.add('hidden');
                 // Modo administrador - mostrar modal de PIN
