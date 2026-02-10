@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rosário Summit 2026 - Inscrições Workshops</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
@@ -1902,12 +1901,6 @@
             
             const baseURL = urlInput.value.trim();
             
-            // Verificar se a biblioteca QRCode está carregada
-            if (typeof QRCode === 'undefined') {
-                container.innerHTML = '<div class="empty-state" style="color: var(--vermelho);">⚠️ Erro: Biblioteca de QR Codes não carregada. Verifique a ligação à internet e recarregue a página.</div>';
-                return;
-            }
-            
             container.innerHTML = Object.values(SESSOES).map(s => {
                 let regrasHTML = '';
                 if (s.id === '10ano') {
@@ -1927,38 +1920,19 @@
                 }
                 
                 const qrURL = `${baseURL}?sessao=${s.id}`;
+                const qrImageURL = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrURL)}&color=1e3a8a`;
                 
                 return `
                 <div class="card qr-card">
                     <h3>${s.nome}</h3>
                     <p class="session-info">${s.data} • ${s.periodo}</p>
-                    <div class="qr-container" id="qr-${s.id}"></div>
+                    <div class="qr-container">
+                        <img src="${qrImageURL}" alt="QR Code ${s.nome}" style="width: 180px; height: 180px;">
+                    </div>
                     <p style="font-size: 0.7rem; color: var(--texto-medio); word-break: break-all; margin-top: 0.5rem;">${qrURL}</p>
                     <div class="rules" style="font-size: 0.8rem; text-align: left;">${regrasHTML}</div>
                 </div>
             `}).join('');
-            
-            setTimeout(() => {
-                Object.values(SESSOES).forEach(s => {
-                    const el = document.getElementById(`qr-${s.id}`);
-                    if (el) {
-                        el.innerHTML = '';
-                        try {
-                            new QRCode(el, {
-                                text: `${baseURL}?sessao=${s.id}`,
-                                width: 180,
-                                height: 180,
-                                colorDark: '#1e3a8a',
-                                colorLight: '#ffffff',
-                                correctLevel: QRCode.CorrectLevel.H
-                            });
-                        } catch (err) {
-                            console.error('Erro ao gerar QR code:', err);
-                            el.innerHTML = '<p style="color: var(--vermelho);">Erro ao gerar QR</p>';
-                        }
-                    }
-                });
-            }, 200);
         }
         
         function atualizarQRCodes() {
